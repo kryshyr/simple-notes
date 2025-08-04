@@ -1,8 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import {
     Alert,
+    Animated,
+    Easing,
     FlatList,
-    Modal,
     Text,
     TextInput,
     TouchableOpacity,
@@ -13,6 +15,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { logout } from '../store/authSlice';
 import { addNote, deleteNote, setSearchQuery, updateNote } from '../store/notesSlice';
 import { Note } from '../types';
+import AddNoteModal from './AddNoteModal';
 
 const HomeScreen: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -24,7 +27,41 @@ const HomeScreen: React.FC = () => {
     const [noteTitle, setNoteTitle] = useState('');
     const [noteDescription, setNoteDescription] = useState('');
 
-    // Filter notes based on search query
+    const fadeAnim = React.useRef(new Animated.Value(0)).current;
+    const modalFadeAnim = React.useRef(new Animated.Value(0)).current;
+    const modalSlideAnim = React.useRef(new Animated.Value(50)).current;
+
+    React.useEffect(() => {
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 500,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+        }).start();
+    }, []);
+
+    React.useEffect(() => {
+        if (modalVisible) {
+            Animated.parallel([
+                Animated.timing(modalFadeAnim, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(modalSlideAnim, {
+                    toValue: 0,
+                    duration: 300,
+                    easing: Easing.out(Easing.back(1.1)),
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        } else {
+            modalFadeAnim.setValue(0);
+            modalSlideAnim.setValue(50);
+        }
+    }, [modalVisible]);
+
+    // to filter the notes based on search query
     const filteredNotes = useMemo(() => {
         if (!searchQuery.trim()) return notes;
         return notes.filter(
@@ -96,144 +133,164 @@ const HomeScreen: React.FC = () => {
     };
 
     const renderNoteItem = ({ item }: { item: Note }) => (
-        <View className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-200">
-            <View className="flex-row justify-between items-start mb-2">
-                <Text className="text-lg font-semibold text-gray-800 flex-1">{item.title}</Text>
+        <Animated.View
+            style={{ opacity: fadeAnim }}
+            className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100"
+        >
+            <View className="flex-row justify-between items-start mb-3">
+                <Text className="text-lg font-semibold text-gray-800 flex-1 pr-3">
+                    {item.title}
+                </Text>
                 <View className="flex-row space-x-2">
                     <TouchableOpacity
                         onPress={() => handleEditNote(item)}
-                        className="bg-blue-500 px-3 py-1 rounded"
+                        className="px-3 py-1.5"
+                        activeOpacity={0.8}
                     >
-                        <Text className="text-white text-sm">Edit</Text>
+                        <Ionicons name="create-outline" size={20} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => handleDeleteNote(item.id)}
-                        className="bg-red-500 px-3 py-1 rounded"
+                        className="ff686b py-1.5"
+                        activeOpacity={0.8}
                     >
-                        <Text className="text-white text-sm">Delete</Text>
+                        <Ionicons name="trash" size={20} color="#ff686b" />
                     </TouchableOpacity>
                 </View>
             </View>
-            <Text className="text-gray-600 mb-2">{item.description}</Text>
+            <Text className="text-gray-600 mb-3 leading-5">{item.description}</Text>
             <Text className="text-gray-400 text-xs">
-                {new Date(item.createdAt).toLocaleDateString()}
+                {new Date(item.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                })}
             </Text>
-        </View>
+        </Animated.View>
     );
 
     const renderEmptyState = () => (
-        <View className="flex-1 justify-center items-center py-20">
-            <Text className="text-gray-500 text-lg mb-4">No notes yet</Text>
-            <TouchableOpacity
-                onPress={handleAddNote}
-                className="bg-blue-500 w-16 h-16 rounded-full justify-center items-center"
-            >
-                <Text className="text-white text-3xl">+</Text>
-            </TouchableOpacity>
-        </View>
+        <Animated.View
+            style={{ opacity: fadeAnim }}
+            className="flex-1 justify-start items-center pt-16"
+        >
+            <View className="items-center">
+                <View className="w-24 h-24 bg-gray-dark rounded-full justify-center items-center mb-3">
+                    <Ionicons name="document-text-outline" size={40} color="#9CA3AF" />
+                </View>
+                <Text className="text-primary text-xl font-normal mb-1">No notes added yet</Text>
+                <Text className="text-gray-400 text-sm mb-8 text-center px-8">
+                    Start adding your notes by tapping the button below.
+                </Text>
+                <TouchableOpacity
+                    onPress={handleAddNote}
+                    className="bg-secondary w-16 h-16 rounded-full justify-center items-center shadow-lg"
+                    activeOpacity={0.8}
+                >
+                    <Ionicons name="add" size={28} color="white" />
+                </TouchableOpacity>
+            </View>
+        </Animated.View>
+    );
+
+    // to render no search results
+
+    const renderNoSearchResults = () => (
+        <Animated.View
+            style={{ opacity: fadeAnim }}
+            className="flex-1 justify-start items-center pt-16"
+        >
+            <View className="items-center">
+                <View className="w-24 h-24 bg-gray-dark rounded-full justify-center items-center mb-3">
+                    <Ionicons name="search-outline" size={40} color="#9CA3AF" />
+                </View>
+                <Text className="text-primary text-xl font-normal mb-1">No notes found</Text>
+                <Text className="text-gray-darker text-sm mb-8 text-center px-8">
+                    No notes match your search criteria. Try adjusting your search terms.
+                </Text>
+            </View>
+        </Animated.View>
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-50">
-            {/* Header */}
-            <View className="bg-white px-4 py-3 border-b border-gray-200">
-                <View className="flex-row justify-between items-center">
-                    <Text className="text-xl font-bold text-gray-800">
-                        Welcome, {username}!
-                    </Text>
-                    <TouchableOpacity
-                        onPress={handleLogout}
-                        className="bg-red-500 px-4 py-2 rounded"
-                    >
-                        <Text className="text-white">Logout</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            {/* Search Bar and Add Button */}
-            <View className="flex-row px-4 py-3 space-x-3">
-                <TextInput
-                    className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2"
-                    placeholder="Search notes..."
-                    value={searchQuery}
-                    onChangeText={(text) => dispatch(setSearchQuery(text))}
-                />
-                <TouchableOpacity
-                    onPress={handleAddNote}
-                    className="bg-blue-500 px-4 py-2 rounded-lg justify-center"
-                >
-                    <Text className="text-white font-semibold">+</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Notes List */}
-            <View className="flex-1 px-4">
-                {filteredNotes.length > 0 ? (
-                    <FlatList
-                        data={filteredNotes}
-                        renderItem={renderNoteItem}
-                        keyExtractor={(item) => item.id}
-                        showsVerticalScrollIndicator={false}
-                    />
-                ) : (
-                    renderEmptyState()
-                )}
-            </View>
-
-            {/* Add/Edit Note Modal */}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                    <View className="bg-white rounded-lg p-6 w-11/12 max-w-md">
-                        <Text className="text-xl font-bold mb-4">
-                            {editingNote ? 'Edit Note' : 'Add New Note'}
-                        </Text>
-
-                        <View className="mb-4">
-                            <Text className="text-gray-700 mb-2">Title</Text>
-                            <TextInput
-                                className="border border-gray-300 rounded-lg px-4 py-2"
-                                placeholder="Enter note title"
-                                value={noteTitle}
-                                onChangeText={setNoteTitle}
-                            />
+        <SafeAreaView className="flex-1 bg-white">
+            <Animated.View style={{ opacity: fadeAnim }} className="flex-1">
+                {/* HEADER */}
+                <View className="bg-white px-6 py-4 border-b border-gray-100">
+                    <View className="flex-row justify-between items-center">
+                        <View>
+                            <Text className="text-3xl font-bold text-primary">
+                                Hello, {username}!
+                            </Text>
+                            <Text className="text-sm text-gray-darker mt-1">
+                                {notes.length} {notes.length === 1 ? 'note' : 'notes'}
+                            </Text>
                         </View>
-
-                        <View className="mb-6">
-                            <Text className="text-gray-700 mb-2">Description</Text>
-                            <TextInput
-                                className="border border-gray-300 rounded-lg px-4 py-2 h-24"
-                                placeholder="Enter note description"
-                                value={noteDescription}
-                                onChangeText={setNoteDescription}
-                                multiline
-                                textAlignVertical="top"
-                            />
-                        </View>
-
-                        <View className="flex-row space-x-3">
-                            <TouchableOpacity
-                                onPress={() => setModalVisible(false)}
-                                className="flex-1 bg-gray-500 py-3 rounded-lg"
-                            >
-                                <Text className="text-white text-center font-semibold">Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleSaveNote}
-                                className="flex-1 bg-blue-500 py-3 rounded-lg"
-                            >
-                                <Text className="text-white text-center font-semibold">
-                                    {editingNote ? 'Update' : 'Add'}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            onPress={handleLogout}
+                            className="bg-gray-100 p-3 rounded-full"
+                            activeOpacity={0.8}
+                        >
+                            <Ionicons name="log-out-outline" size={20} color="#6B7280" />
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+
+                {/* SEARCH BAR AND ADD BUTTON */}
+                <View className="flex-row px-6 py-4 space-x-3">
+                    <View className="flex-1 relative">
+                        <TextInput
+                            className="bg-gray-light border border-gray-200 rounded-2xl px-5 py-3 pr-12 mr-5 text-base text-gray-800"
+                            placeholder="Search your notes..."
+                            placeholderTextColor="#9CA3AF"
+                            value={searchQuery}
+                            onChangeText={(text) => dispatch(setSearchQuery(text))}
+                        />
+                        <View className="absolute right-8 top-3">
+                            <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+                        </View>
+                    </View>
+                    <TouchableOpacity
+                        onPress={handleAddNote}
+                        className="bg-secondary w-32 h-12 rounded-2xl justify-center items-center shadow-sm flex-row"
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="add" size={24} color="white" />
+                        <Text className="text-white text-base font-medium ml-2">Add Note</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* NOTES LIST */}
+                <View className="flex-1 px-6">
+                    {filteredNotes.length > 0 ? (
+                        <FlatList
+                            data={filteredNotes}
+                            renderItem={renderNoteItem}
+                            keyExtractor={(item) => item.id}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 20 }}
+                        />
+                    ) : notes.length === 0 ? (
+                        renderEmptyState()
+                    ) : (
+                        renderNoSearchResults()
+                    )}
+                </View>
+            </Animated.View>
+
+            {/* ADD/EDIT NOTE MODAL */}
+            <AddNoteModal
+                visible={modalVisible}
+                editingNote={editingNote}
+                noteTitle={noteTitle}
+                noteDescription={noteDescription}
+                onTitleChange={setNoteTitle}
+                onDescriptionChange={setNoteDescription}
+                onSave={handleSaveNote}
+                onCancel={() => setModalVisible(false)}
+                modalFadeAnim={modalFadeAnim}
+                modalSlideAnim={modalSlideAnim}
+            />
         </SafeAreaView>
     );
 };
