@@ -5,7 +5,6 @@ import {
     Animated,
     Easing,
     FlatList,
-    Modal,
     Text,
     TextInput,
     TouchableOpacity,
@@ -16,6 +15,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { logout } from '../store/authSlice';
 import { addNote, deleteNote, setSearchQuery, updateNote } from '../store/notesSlice';
 import { Note } from '../types';
+import AddNoteModal from './AddNoteModal';
 
 const HomeScreen: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -111,9 +111,6 @@ const HomeScreen: React.FC = () => {
         setEditingNote(null);
     };
 
-    // to check if modal form is valid
-    const isModalFormValid = noteTitle.trim() !== '' && noteDescription.trim() !== '';
-
     const handleDeleteNote = (noteId: string) => {
         Alert.alert(
             'Delete Note',
@@ -148,17 +145,17 @@ const HomeScreen: React.FC = () => {
                 <View className="flex-row space-x-2">
                     <TouchableOpacity
                         onPress={() => handleEditNote(item)}
-                        className="bg-blue-500 px-3 py-1.5 rounded-lg"
+                        className="px-3 py-1.5"
                         activeOpacity={0.8}
                     >
-                        <Ionicons name="pencil" size={14} color="white" />
+                        <Ionicons name="create-outline" size={20} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => handleDeleteNote(item.id)}
-                        className="bg-red-500 px-3 py-1.5 rounded-lg"
+                        className="ff686b py-1.5"
                         activeOpacity={0.8}
                     >
-                        <Ionicons name="trash" size={14} color="white" />
+                        <Ionicons name="trash" size={20} color="#ff686b" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -204,10 +201,10 @@ const HomeScreen: React.FC = () => {
                 <View className="bg-white px-6 py-4 border-b border-gray-100">
                     <View className="flex-row justify-between items-center">
                         <View>
-                            <Text className="text-2xl font-light text-gray-800">
+                            <Text className="text-3xl font-bold text-primary">
                                 Hello, {username}!
                             </Text>
-                            <Text className="text-sm text-gray-500 mt-1">
+                            <Text className="text-sm text-gray-darker mt-1">
                                 {notes.length} {notes.length === 1 ? 'note' : 'notes'}
                             </Text>
                         </View>
@@ -237,10 +234,11 @@ const HomeScreen: React.FC = () => {
                     </View>
                     <TouchableOpacity
                         onPress={handleAddNote}
-                        className="bg-secondary w-12 h-12 rounded-2xl justify-center items-center shadow-sm"
+                        className="bg-secondary w-32 h-12 rounded-2xl justify-center items-center shadow-sm flex-row"
                         activeOpacity={0.8}
                     >
                         <Ionicons name="add" size={24} color="white" />
+                        <Text className="text-white text-base font-medium ml-2">Add Note</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -261,84 +259,18 @@ const HomeScreen: React.FC = () => {
             </Animated.View>
 
             {/* Add/Edit Note Modal */}
-            <Modal
-                animationType="none"
-                transparent={true}
+            <AddNoteModal
                 visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <Animated.View 
-                    style={{ opacity: modalFadeAnim }}
-                    className="flex-1 justify-center items-center px-6"
-                >
-                    <TouchableOpacity 
-                        className="absolute inset-0 bg-black opacity-50"
-                        onPress={() => setModalVisible(false)}
-                    />
-                    
-                    <Animated.View
-                        style={{
-                            transform: [{ translateY: modalSlideAnim }],
-                            opacity: modalFadeAnim,
-                        }}
-                        className="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl"
-                    >
-                        <Text className="text-2xl font-light text-gray-800 mb-6 text-center">
-                            {editingNote ? 'Edit Note' : 'New Note'}
-                        </Text>
-
-                        <View className="mb-5">
-                            <Text className="text-gray-700 mb-3 font-medium">Title</Text>
-                            <TextInput
-                                className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-base text-gray-800"
-                                placeholder="Enter note title"
-                                placeholderTextColor="#9CA3AF"
-                                value={noteTitle}
-                                onChangeText={setNoteTitle}
-                            />
-                        </View>
-
-                        <View className="mb-8">
-                            <Text className="text-gray-700 mb-3 font-medium">Description</Text>
-                            <TextInput
-                                className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-base text-gray-800 h-28"
-                                placeholder="Enter note description"
-                                placeholderTextColor="#9CA3AF"
-                                value={noteDescription}
-                                onChangeText={setNoteDescription}
-                                multiline
-                                textAlignVertical="top"
-                            />
-                        </View>
-
-                        <View className="flex-row space-x-3">
-                            <TouchableOpacity
-                                onPress={() => setModalVisible(false)}
-                                className="flex-1 bg-gray-100 py-4 rounded-2xl"
-                                activeOpacity={0.8}
-                            >
-                                <Text className="text-gray-700 text-center font-semibold text-base">
-                                    Cancel
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleSaveNote}
-                                disabled={!isModalFormValid}
-                                className={`flex-1 py-4 rounded-2xl ${
-                                    isModalFormValid ? 'bg-blue-500' : 'bg-gray-300'
-                                }`}
-                                activeOpacity={isModalFormValid ? 0.8 : 1}
-                            >
-                                <Text className={`text-center font-semibold text-base ${
-                                    isModalFormValid ? 'text-white' : 'text-gray-500'
-                                }`}>
-                                    {editingNote ? 'Update' : 'Save'}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </Animated.View>
-                </Animated.View>
-            </Modal>
+                editingNote={editingNote}
+                noteTitle={noteTitle}
+                noteDescription={noteDescription}
+                onTitleChange={setNoteTitle}
+                onDescriptionChange={setNoteDescription}
+                onSave={handleSaveNote}
+                onCancel={() => setModalVisible(false)}
+                modalFadeAnim={modalFadeAnim}
+                modalSlideAnim={modalSlideAnim}
+            />
         </SafeAreaView>
     );
 };
