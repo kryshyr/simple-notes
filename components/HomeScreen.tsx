@@ -27,7 +27,6 @@ const HomeScreen: React.FC = () => {
     const [noteTitle, setNoteTitle] = useState('');
     const [noteDescription, setNoteDescription] = useState('');
 
-    // Animation values
     const fadeAnim = React.useRef(new Animated.Value(0)).current;
     const modalFadeAnim = React.useRef(new Animated.Value(0)).current;
     const modalSlideAnim = React.useRef(new Animated.Value(50)).current;
@@ -62,7 +61,7 @@ const HomeScreen: React.FC = () => {
         }
     }, [modalVisible]);
 
-    // Filter notes based on search query
+    // to filter the notes based on search query
     const filteredNotes = useMemo(() => {
         if (!searchQuery.trim()) return notes;
         return notes.filter(
@@ -173,7 +172,7 @@ const HomeScreen: React.FC = () => {
     const renderEmptyState = () => (
         <Animated.View
             style={{ opacity: fadeAnim }}
-            className="flex-1 justify-center items-center py-20"
+            className="flex-1 justify-start items-center pt-16"
         >
             <View className="items-center">
                 <View className="w-24 h-24 bg-gray-dark rounded-full justify-center items-center mb-3">
@@ -194,10 +193,29 @@ const HomeScreen: React.FC = () => {
         </Animated.View>
     );
 
+    // to render no search results
+
+    const renderNoSearchResults = () => (
+        <Animated.View
+            style={{ opacity: fadeAnim }}
+            className="flex-1 justify-start items-center pt-16"
+        >
+            <View className="items-center">
+                <View className="w-24 h-24 bg-gray-dark rounded-full justify-center items-center mb-3">
+                    <Ionicons name="search-outline" size={40} color="#9CA3AF" />
+                </View>
+                <Text className="text-primary text-xl font-normal mb-1">No notes found</Text>
+                <Text className="text-gray-darker text-sm mb-8 text-center px-8">
+                    No notes match your search criteria. Try adjusting your search terms.
+                </Text>
+            </View>
+        </Animated.View>
+    );
+
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Animated.View style={{ opacity: fadeAnim }} className="flex-1">
-                {/* Header */}
+                {/* HEADER */}
                 <View className="bg-white px-6 py-4 border-b border-gray-100">
                     <View className="flex-row justify-between items-center">
                         <View>
@@ -218,7 +236,7 @@ const HomeScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Search Bar and Add Button */}
+                {/* SEARCH BAR AND ADD BUTTON */}
                 <View className="flex-row px-6 py-4 space-x-3">
                     <View className="flex-1 relative">
                         <TextInput
@@ -242,7 +260,7 @@ const HomeScreen: React.FC = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Notes List */}
+                {/* NOTES LIST */}
                 <View className="flex-1 px-6">
                     {filteredNotes.length > 0 ? (
                         <FlatList
@@ -252,13 +270,15 @@ const HomeScreen: React.FC = () => {
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         />
-                    ) : (
+                    ) : notes.length === 0 ? (
                         renderEmptyState()
+                    ) : (
+                        renderNoSearchResults()
                     )}
                 </View>
             </Animated.View>
 
-            {/* Add/Edit Note Modal */}
+            {/* ADD/EDIT NOTE MODAL */}
             <AddNoteModal
                 visible={modalVisible}
                 editingNote={editingNote}
