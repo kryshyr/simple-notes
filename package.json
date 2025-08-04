@@ -1,5 +1,5 @@
 {
-  "name": "to-do-app",
+  "name": "simple-notes",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "to-do-app",
-    "slug": "to-do-app",
+    "name": "simple-notes",
+    "slug": "simple-notes",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
