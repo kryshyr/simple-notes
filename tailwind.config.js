@@ -22,7 +22,12 @@ module.exports = {
                 darker: '#6c757d',
                 dark: '#e9ecef',
                 light: '#f8f9fa',
+            },
+            red: {
+                dark: '#c81d25',
+                light: '#ff5a5f',
             }
+
         },
     },
   },
