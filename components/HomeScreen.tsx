@@ -16,6 +16,7 @@ import { logout } from '../store/authSlice';
 import { addNote, deleteNote, setSearchQuery, updateNote } from '../store/notesSlice';
 import { Note } from '../types';
 import AddNoteModal from './AddNoteModal';
+import ConfirmationModal from './ConfirmationModal';
 
 const HomeScreen: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -26,6 +27,11 @@ const HomeScreen: React.FC = () => {
     const [editingNote, setEditingNote] = useState<Note | null>(null);
     const [noteTitle, setNoteTitle] = useState('');
     const [noteDescription, setNoteDescription] = useState('');
+    
+    // Confirmation modal states
+    const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
     const fadeAnim = React.useRef(new Animated.Value(0)).current;
     const modalFadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -111,25 +117,25 @@ const HomeScreen: React.FC = () => {
     };
 
     const handleDeleteNote = (noteId: string) => {
-        Alert.alert(
-            'Delete Note',
-            'Are you sure you want to delete this note?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => dispatch(deleteNote(noteId)) },
-            ]
-        );
+        setNoteToDelete(noteId);
+        setDeleteModalVisible(true);
+    };
+
+    const confirmDeleteNote = () => {
+        if (noteToDelete) {
+            dispatch(deleteNote(noteToDelete));
+        }
+        setDeleteModalVisible(false);
+        setNoteToDelete(null);
     };
 
     const handleLogout = () => {
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Logout', style: 'destructive', onPress: () => dispatch(logout()) },
-            ]
-        );
+        setLogoutModalVisible(true);
+    };
+
+    const confirmLogout = () => {
+        dispatch(logout());
+        setLogoutModalVisible(false);
     };
 
     const renderNoteItem = ({ item }: { item: Note }) => (
@@ -194,7 +200,6 @@ const HomeScreen: React.FC = () => {
     );
 
     // to render no search results
-
     const renderNoSearchResults = () => (
         <Animated.View
             style={{ opacity: fadeAnim }}
@@ -215,81 +220,107 @@ const HomeScreen: React.FC = () => {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Animated.View style={{ opacity: fadeAnim }} className="flex-1">
-                {/* HEADER */}
-                <View className="bg-white px-6 py-4 border-b border-gray-100">
-                    <View className="flex-row justify-between items-center">
-                        <View>
-                            <Text className="text-3xl font-bold text-primary">
-                                Hello, {username}!
-                            </Text>
-                            <Text className="text-sm text-gray-darker mt-1">
-                                {notes.length} {notes.length === 1 ? 'note' : 'notes'}
-                            </Text>
-                        </View>
-                        <TouchableOpacity
-                            onPress={handleLogout}
-                            className="bg-gray-100 p-3 rounded-full"
-                            activeOpacity={0.8}
-                        >
-                            <Ionicons name="log-out-outline" size={20} color="#6B7280" />
-                        </TouchableOpacity>
-                    </View>
+            {/* HEADER */}
+            <View className="bg-white px-6 py-4 border-b border-gray-100">
+                <View className="flex-row justify-between items-center">
+                <View>
+                    <Text className="text-3xl font-bold text-primary">
+                    Hello, {username}!
+                    </Text>
+                    <Text className="text-sm text-gray-darker mt-1">
+                    {notes.length} {notes.length === 1 ? 'note' : 'notes'}
+                    </Text>
                 </View>
+                <TouchableOpacity
+                    onPress={handleLogout}
+                    className="bg-gray-100 p-3 rounded-full"
+                    activeOpacity={0.8}
+                >
+                    <Ionicons name="log-out-outline" size={20} color="#6B7280" />
+                </TouchableOpacity>
+                </View>
+            </View>
 
-                {/* SEARCH BAR AND ADD BUTTON */}
-                <View className="flex-row px-6 py-4 space-x-3">
-                    <View className="flex-1 relative">
-                        <TextInput
-                            className="bg-gray-light border border-gray-200 rounded-2xl px-5 py-3 pr-12 mr-5 text-base text-gray-800"
-                            placeholder="Search your notes..."
-                            placeholderTextColor="#9CA3AF"
-                            value={searchQuery}
-                            onChangeText={(text) => dispatch(setSearchQuery(text))}
-                        />
-                        <View className="absolute right-8 top-3">
-                            <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-                        </View>
-                    </View>
-                    <TouchableOpacity
-                        onPress={handleAddNote}
-                        className="bg-secondary w-32 h-12 rounded-2xl justify-center items-center shadow-sm flex-row"
-                        activeOpacity={0.8}
-                    >
-                        <Ionicons name="add" size={24} color="white" />
-                        <Text className="text-white text-base font-medium ml-2">Add Note</Text>
-                    </TouchableOpacity>
+            {/* SEARCH BAR AND ADD BUTTON */}
+            <View className="flex-row px-6 py-4 space-x-3">
+                <View className="flex-1 relative">
+                <TextInput
+                    className="bg-gray-light border border-gray-200 rounded-2xl px-5 py-3 pr-12 mr-5 text-base text-gray-800"
+                    placeholder="Search your notes..."
+                    placeholderTextColor="#9CA3AF"
+                    value={searchQuery}
+                    onChangeText={(text) => dispatch(setSearchQuery(text))}
+                />
+                <View className="absolute right-8 top-3">
+                    <Ionicons name="search-outline" size={20} color="#9CA3AF" />
                 </View>
+                </View>
+                <TouchableOpacity
+                onPress={handleAddNote}
+                className="bg-secondary w-32 h-12 rounded-2xl justify-center items-center shadow-sm flex-row"
+                activeOpacity={0.8}
+                >
+                <Ionicons name="add" size={24} color="white" />
+                <Text className="text-white text-base font-medium ml-2">Add Note</Text>
+                </TouchableOpacity>
+            </View>
 
-                {/* NOTES LIST */}
-                <View className="flex-1 px-6">
-                    {filteredNotes.length > 0 ? (
-                        <FlatList
-                            data={filteredNotes}
-                            renderItem={renderNoteItem}
-                            keyExtractor={(item) => item.id}
-                            showsVerticalScrollIndicator={false}
-                            contentContainerStyle={{ paddingBottom: 20 }}
-                        />
-                    ) : notes.length === 0 ? (
-                        renderEmptyState()
-                    ) : (
-                        renderNoSearchResults()
-                    )}
-                </View>
+            {/* NOTES LIST */}
+            <View className="flex-1 px-6">
+                {filteredNotes.length > 0 ? (
+                <FlatList
+                    data={filteredNotes}
+                    renderItem={renderNoteItem}
+                    keyExtractor={(item) => item.id}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                />
+                ) : notes.length === 0 ? (
+                renderEmptyState()
+                ) : (
+                renderNoSearchResults()
+                )}
+            </View>
             </Animated.View>
 
             {/* ADD/EDIT NOTE MODAL */}
             <AddNoteModal
-                visible={modalVisible}
-                editingNote={editingNote}
-                noteTitle={noteTitle}
-                noteDescription={noteDescription}
-                onTitleChange={setNoteTitle}
-                onDescriptionChange={setNoteDescription}
-                onSave={handleSaveNote}
-                onCancel={() => setModalVisible(false)}
-                modalFadeAnim={modalFadeAnim}
-                modalSlideAnim={modalSlideAnim}
+            visible={modalVisible}
+            editingNote={editingNote}
+            noteTitle={noteTitle}
+            noteDescription={noteDescription}
+            onTitleChange={setNoteTitle}
+            onDescriptionChange={setNoteDescription}
+            onSave={handleSaveNote}
+            onCancel={() => setModalVisible(false)}
+            modalFadeAnim={modalFadeAnim}
+            modalSlideAnim={modalSlideAnim}
+            />
+
+            {/* LOGOUT CONFIRMATION MODAL */}
+            <ConfirmationModal
+            visible={logoutModalVisible}
+            title="Logout"
+            message="Are you sure you want to logout?"
+            confirmText="Logout"
+            cancelText="Cancel"
+            iconName="log-out-outline"
+            onConfirm={confirmLogout}
+            onCancel={() => setLogoutModalVisible(false)}
+            />
+
+            {/* DELETE NOTE CONFIRMATION MODAL */}
+            <ConfirmationModal
+            visible={deleteModalVisible}
+            title="Delete Note"
+            message={
+                "Are you sure you want to delete this note?\nThis action cannot be undone."
+            }
+            confirmText="Delete"
+            cancelText="Cancel"
+            iconName="trash-outline"
+            onConfirm={confirmDeleteNote}
+            onCancel={() => setDeleteModalVisible(false)}
             />
         </SafeAreaView>
     );
