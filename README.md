@@ -1,50 +1,69 @@
-# Welcome to your Expo app 👋
+# SimpleNotes 📝
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple note-taking application built with React Native and Expo. Stay organized and keep track of your thoughts, tasks, and ideas with this intuitive mobile app.
 
-## Get started
+## What You Can Do 🚀
 
-1. Install dependencies
+### 1. Login Screen
+- Simple login form with validation
+- Mock credentials for testing:
+  - Username: `test`
+  - Password: `password123`
+- Form validation for empty fields and invalid credentials
+- Session persistence (stays logged in after app restart)
 
+### 2. Home Dashboard (Coming Soon)
+- **Note Management**: Create, view, edit, and delete notes
+- **Search**: Filter notes by title or description
+- **Add Notes**: Pop-up modal to create new notes
+- **Empty State**: Helpful message when no notes exist
+- **Logout**: Clear session and return to login
+
+## Technologies Used 🛠️
+
+- **React Native** with Expo
+- **TypeScript** for type safety
+- **Redux Toolkit** for state management
+- **NativeWind** for styling (Tailwind CSS for React Native)
+
+## Setup Instructions 🚀
+
+1. **Clone and install**
    ```bash
+   git clone <repository-url>
+   cd simple-notes
    npm install
    ```
 
-2. Start the app
-
+2. **Start the app**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. **Run on device**
+   - Scan QR code with Expo Go app
+   - Or run on iOS/Android simulator
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Test Login
+- Username: `test`
+- Password: `password123`
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Development Commands 📋
 
 ```bash
-npm run reset-project
+# Start development server
+npx expo start
+
+# Clear cache and start
+npx expo start --clear
+
+# Run on simulators
+npx expo run:ios
+npx expo run:android
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Learn More 📚
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo documentation](https://docs.expo.dev/)
+- [React Native documentation](https://reactnative.dev/docs/getting-started)
+- [Redux Toolkit documentation](https://redux-toolkit.js.org/)
