@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import {
     Animated,
     Easing,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     Text,
@@ -20,6 +21,7 @@ const LoginScreen: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({ username: '', password: '', credentials: '' });
     const [isLoading, setIsLoading] = useState(false);
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const dispatch = useAppDispatch();
 
     const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -34,6 +36,20 @@ const LoginScreen: React.FC = () => {
             easing: Easing.out(Easing.ease),
             useNativeDriver: true,
         }).start();
+    }, []);
+
+    React.useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+            setIsKeyboardVisible(true);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setIsKeyboardVisible(false);
+        });
+
+        return () => {
+            keyboardDidShowListener?.remove();
+            keyboardDidHideListener?.remove();
+        };
     }, []);
 
     React.useEffect(() => {
@@ -96,18 +112,18 @@ const LoginScreen: React.FC = () => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
-                <View className="flex-1 justify-center px-8">
+                <View className={`flex-1 px-8 ${isKeyboardVisible ? 'justify-start pt-14' : 'justify-center'}`}>
                     <Animated.View
                         style={{
                             opacity: fadeAnim,
                         }}
-                        className="bg-white rounded-3xl p-8 border border-gray-dark shadow-sm"
+                        className="bg-white rounded-3xl p-6 border border-gray-dark shadow-sm"
                     >
                         <View className="items-center mb-6">
                             <View className="w-20 h-20 bg-secondary rounded-2xl mb-3 justify-center items-center shadow-md">
                                 <Ionicons name="document-text" size={32} color="white" />
                             </View>
-                            <Text className="text-3xl font-normal text-primar">
+                            <Text className="text-3xl font-bold text-primar">
                                 SimpleNotes
                             </Text>
                             <Text className="text-sm text-gray-500 mt-1">
@@ -142,7 +158,7 @@ const LoginScreen: React.FC = () => {
                         </View>
 
                         {/* PASSWORD */}
-                        <View className="mb-8">
+                        <View className="mb-4">
                             <Text className="text-gray-700 mb-2 font-medium">Password</Text>
                             <View className={`relative ${errors.password ? 'mb-2' : ''}`}>
                                 <TextInput
@@ -177,8 +193,8 @@ const LoginScreen: React.FC = () => {
 
                         {/* Error Message */}
                         {errors.credentials ? (
-                            <View className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                                <Text className="text-red-600 text-center font-medium">
+                            <View className="rounded-xl p-2 mb-3">
+                                <Text className="text-red-light text-center font-medium">
                                     {errors.credentials}
                                 </Text>
                             </View>
